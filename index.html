@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paint</title>
+    <script src="js/script.js"></script>
+    <script src="js/tool.js"></script>
+    <script src="js/line.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="canvas">
+        <canvas id="bg_canvas" class ="bg_canvas">It's not your day, bro</canvas>
+        <canvas id="fg_canvas" class ="fg_canvas">It's not your day, bro</canvas>
+    </div>
+    
+    <div class="container">
+        <div class="menu">
+            <button class="btn" id = "pen" value="1">pen</button>
+            <button class="btn" id = "line" value="2">line</button>
+            <button class="btn" id = "circle" value="3">circle</button>
+            <button class="btn" id = "clearCanvas">clear canvas</button>
+            
+            <div class="range">
+                <input id="range_stick" type="range"  min="1" max="10" step="1" value="4">
+                <div id="range_wrap">
+                    <span class="range_lable">Thickness</span>
+                    <span class="range_value">4</span>
+                </div> 
+            </div> 
+        </div>
+        
+    </div>
+   
+
+</body>
+</html>

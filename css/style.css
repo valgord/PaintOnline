@@ -1,0 +1,34 @@
+body{
+    margin: 0;
+    padding: 0;
+}
+.canvas{
+    widows: 1200px;
+    height: 520px;
+}
+.bg_canvas, .fg_canvas{
+    display: block;
+    position: absolute;
+    border: 2px solid black;
+}
+.container{
+    margin: 0 auto;
+    width: 100%;
+}
+.menu{
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    margin: 0 auto;
+}
+.btn{
+    width: 60px;
+    height: 20px;
+}
+#range_wrap{
+    text-align: center;
+    margin: 0 auto;
+}
+
+
+
