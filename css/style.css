@@ -3,14 +3,12 @@ body{
     padding: 0;
 }
 .canvas{
-    widows: 1200px;
-    height: 520px;
-}
-.bg_canvas, .fg_canvas{
-    display: block;
-    position: absolute;
+    height: 700px;
     border: 2px solid black;
+    overflow: scroll;
+    position: relative;
 }
+
 .container{
     margin: 0 auto;
     width: 100%;
