@@ -17,7 +17,12 @@ io.on('connection', function(socket){
     socket.on('penToServer', function(data){
         socket.broadcast.emit('penToClients', data);
     });
-
+    socket.on('lineToServer', function(data){
+        socket.broadcast.emit('lineToClients', data);
+    });
+    socket.on('clearCanvas', function(){
+        socket.broadcast.emit('clearCanvas');
+    });
     socket.on('disconnect', function(){
         count--;
         io.sockets.emit('broadcast', count);

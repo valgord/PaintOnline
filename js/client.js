@@ -16,7 +16,10 @@ window.onload = function(){
                 usersCount.textContent = count;
         });
     let clearCanv = document.getElementById('clearCanvas');
-        clearCanv.addEventListener('click', () => clearCanvas(bg_canvas, bg_context));
+        clearCanv.addEventListener('click', () => {
+            clearCanvas(bg_canvas, bg_context);
+            socket.emit('clearCanvas');
+        });
         function clearCanvas(canvas, context){
             context.clearRect(0, 0, canvas.width, canvas.height);    
         }
@@ -47,7 +50,7 @@ window.onload = function(){
         endX = 0,
         endY = 0,
         coords = [];//координаты точек,по которым рисуем линии. Нужно для сохранения в localstorage.
-        coordToServer = [];
+        coordsToServer = [];
         menu = document.querySelector('.menu');
         menu.addEventListener('click', function(e){
                 if (e.target.classList.contains('btn')){
@@ -62,6 +65,7 @@ window.onload = function(){
                 startY = e.offsetY==undefined?e.layerY:e.offsetY;
         });
         fg_canvas.addEventListener('mouseup', function(e){
+                coordsToServer = [];
                 mouseDown = false;
                 endX = e.offsetX==undefined?e.layerX:e.offsetX;
                 endY = e.offsetY==undefined?e.layerY:e.offsetY;
@@ -74,6 +78,11 @@ window.onload = function(){
                 switch(chosenToolId){
                     case penId:
                         if (mouseDown) {
+                            coordsToServer.push([e.offsetX==undefined?e.layerX:e.offsetX, e.offsetY==undefined?e.layerY:e.offsetY]);
+                            socket.emit('penToServer', {
+                                lineWidth: range_stick.value,
+                                coords: coordsToServer
+                            });
                             coords.push([e.offsetX==undefined?e.layerX:e.offsetX, e.offsetY==undefined?e.layerY:e.offsetY]);
                             bg_context.lineTo(e.offsetX==undefined?e.layerX:e.offsetX, e.offsetY==undefined?e.layerY:e.offsetY);
                             bg_context.stroke();
@@ -83,15 +92,13 @@ window.onload = function(){
                             bg_context.moveTo(e.offsetX==undefined?e.layerX:e.offsetX, e.offsetY==undefined?e.layerY:e.offsetY);
                         }
                             else{
-                                socket.emit('penToServer', {
-                                    lineWidth: range_stick.value,
-                                    coords: coords
-                                });
+
                                 bg_context.beginPath();
                             }       
                         break;
                     case lineId:
                         let line = new Line(startX, startY, e.offsetX==undefined?e.layerX:e.offsetX, e.offsetY==undefined?e.layerY:e.offsetY);
+                        // let line = new Line(startX, startY, endX, endY);
                         if (mouseDown){
                             bg_context.beginPath();    
                             bg_context.moveTo(line.startX, line.startY);
@@ -99,12 +106,24 @@ window.onload = function(){
                             fg_context.moveTo(line.startX, line.startY); 
                             fg_context.lineTo(line.endX, line.endY);
                             clearCanvas(fg_canvas, fg_context);  
-                            fg_context.stroke();                                       
+                            fg_context.stroke(); 
+                                    
                          }
                             else {
                                 bg_context.lineTo(line.endX, line.endY);
                                 bg_context.stroke();
                                 bg_context.beginPath();
+                                socket.emit('lineToServer', {
+                                    lineWidth: range_stick.value,
+                                    startX: startX, 
+                                    startY: startY,
+                                    endX: endX,
+                                    endY: endY
+                                });
+                                startX = 0;
+                                startY = 0;
+                                endX = 0;
+                                endY = 0;
                                 clearCanvas(fg_canvas, fg_context);
                                 
                             } 
@@ -200,9 +219,25 @@ window.onload = function(){
         socket.on('penToClients', function(data){
             bg_context.lineWidth = data.lineWidth;
             let drawCoords = data.coords;
-            drawCoords.forEach(function(point){
-                console.log(point[0], point[1]);
-            });
-
+            for (let i = 0; i < drawCoords.length - 2; i++){
+                bg_context.beginPath();
+                bg_context.moveTo(drawCoords[i][0], drawCoords[i][1]);
+                bg_context.lineTo(drawCoords[i+1][0], drawCoords[i+1][1]);
+                bg_context.stroke();
+                
+            }
+        });
+        socket.on('lineToClients', function(data){
+            bg_context.lineWidth = data.lineWidth;
+            console.log(data);
+            bg_context.beginPath();
+            bg_context.moveTo(data.startX, data.startY);
+            bg_context.lineTo(data.endX, data.endY);
+            bg_context.stroke();
+            bg_context.beginPath();
+            
+        });
+        socket.on('clearCanvas', function(){
+            clearCanvas(bg_canvas, bg_context);
         });
 };
