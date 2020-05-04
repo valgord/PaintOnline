@@ -2,8 +2,13 @@ body{
     margin: 0;
     padding: 0;
 }
+.wrapper{
+    display: flex;
+    justify-content: space-between;
+}
 .canvas{
-    height: 700px;
+    width: calc(90vw);
+    height: calc(90vh);
     border: 2px solid black;
     overflow: scroll;
     position: relative;
@@ -20,13 +25,20 @@ body{
     margin: 0 auto;
 }
 .btn{
-    width: 60px;
+    width: 200px;
     height: 20px;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 7px;
+    font-size: 16px;
 }
 #range_wrap{
     text-align: center;
     margin: 0 auto;
 }
-
+.users{
+    width: 100%;
+    max-width: 70px;
+}
 
 
