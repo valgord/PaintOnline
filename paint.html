@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paint</title>
+    <script src="tool.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src = "clientNew.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="wrapper">
+        <div class="app"> 
+            <div class="header">
+                <div class="logo">Licensed logo</div>
+                <div class="tool_bar">
+                    <div class="tools">
+                        <a href="#" class="btn"  value="1"><img src="pen30x30.png" id="pen" class="img tool" alt="Карандаш"></a>
+                        <a href="#" class="btn"  value="2"><img src="line.png" id="line" class="img tool" alt=""></a>
+                        <a href="#" class="btn"  value="3"><img src="circle30x30.png" id="circle" class="img tool" alt=""></a>
+                    </div>
+                    <div class="action_bar">
+                        <div class="range_input">
+                            <input id="range_stick" type="range" class="range" min="1" max="10" step="1" value="4">
+                            <div class="range_value">4</div>                         
+                        </div> 
+                        <div class="input_file">
+                            <form action = "/upload" name="formUpload" enctype="multipart/form-data" method="post">
+                                <input id="input_file" type="file" name="fileData">
+                                <input type="submit">
+                            </form>                       
+                        </div> 
+                        <div class="actions">
+                            <a href="#" class="btn" id="clearCanvas" value=""><img src="clear.png" alt=""></a>
+                            <a href="#" class="btn" id="back" value=""><img src="step_back.png" alt=""></a>
+                            <a href="#" class="btn" id="imgInsert" value=""><img src="img.png" alt=""></a>
+                        </div>
+                    </div>
+                    <!-- <a href="#" class="btn" id="" value=""><img src="" alt=""></a>
+                    <a href="#" class="btn" id="" value=""><img src="" alt=""></a>
+                    <a href="#" class="btn" id="" value=""><img src="" alt=""></a>
+                    <a href="#" class="btn" id="" value=""><img src="" alt=""></a>
+                    <a href="#" class="btn" id="" value=""><img src="" alt=""></a>     -->
+                    
+
+                </div>
+            </div>       
+
+                
+            <div class="canvas">
+
+                <canvas id="bg_canvas"  class ="bg_canvas" width="1800px" height="1000px" style="position: absolute; background: url('background-squares.jpg')">It's not your day, bro</canvas>
+                <canvas id="fg_canvas"  class ="fg_canvas" width="1800px" height="1000px" style="position: absolute; z-index: 5; ">It's not your day, bro</canvas>
+            </div>
+        </div>
+        <div class="users">
+            <div class="users_icons">
+                Здесь будут отображены пользователи
+            </div>
+            <div class="user_list">
+                <span class="countOfUsers">0</span>
+            </div>
+        </div>
+    </div>
+
+
+   
+    <script src="uploadFile.js"></script>
+</body>
+</html>

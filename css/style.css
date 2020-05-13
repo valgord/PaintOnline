@@ -3,42 +3,94 @@ body{
     padding: 0;
 }
 .wrapper{
+    margin: 0;
     display: flex;
     justify-content: space-between;
+    background: #F2F2F2;
+}
+.app{
+    width: calc(90vw);   
+}
+.header{
+    height: 100px;
+    position: fixed;
+}
+.logo{
+    height: 100px;
+    float: left;
+    width: calc(10vw);
+    text-align: center;
+    line-height: 100px;
 }
 .canvas{
     width: calc(90vw);
-    height: calc(90vh);
+    height: calc(80vh);
     border: 2px solid black;
     overflow: scroll;
     position: relative;
+    background: #fff;
+    margin-top: 100px;
 }
 
-.container{
+.tool_bar{
     margin: 0 auto;
-    width: 100%;
+    height: 100px;
+
+    z-index: 1000;
+    background: #F2F2F2;
+    width: calc(80vw);   
 }
-.menu{
-    width: 100%;
-    max-width: 1000px;
-    display: flex;
-    margin: 0 auto;
+.tools{
+    height: 50px;
+}
+.action_bar{
+    height: 50px;
+}
+.range_input{
+    float: left;
+    height: 50px;
+    line-height: 50px;
+}
+.input_file{
+    height: 50px;
+    float: left;
+    line-height: 50px;
+    margin-left: 10px;
 }
 .btn{
-    width: 200px;
-    height: 20px;
-    padding: 15px;
+    width: 30px;
+    height: 30px;
     margin: 10px;
-    border-radius: 7px;
-    font-size: 16px;
+    padding: 3px;
+    border-radius: 3px;
+    border: 1px solid;
+    display: inline-block;
+    transition: background .5s;
 }
-#range_wrap{
+.btn:hover{
+    background: #fff;
+
+}
+.active{
+    background: #fff;
+}
+.range_value{
     text-align: center;
     margin: 0 auto;
+    display: inline-block;
+}
+.range{
+    -webkit-appearance: none;
+    width:60px;
+    height:5px;
+    outline : none;
+    border:1px solid rgb(88, 45, 45);
 }
 .users{
     width: 100%;
-    max-width: 70px;
+    text-align: center;
 }
-
+.users_icons{
+    margin-top: 20px;
+}
 
