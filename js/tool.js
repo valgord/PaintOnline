@@ -56,22 +56,29 @@
 
         }
 
-        class Circle{
-            constructor(centerX, centerY, r, startAngle, endAngle, direction){
-                this.centerX= centerX;
-                this.centerY = centerY;
-                this.r = r;
-                this.startAngle = startAngle;
-                this.endAngle = endAngle;
+        class Circle{            
+            constructor(start, Point){
+                this.centerX= (Point.x + start.x)/2;
+                this.centerY = (Point.y + start.y)/2;
+                this.r = Math.sqrt(Math.pow(this.centerX - start.x,2) + Math.pow(this.centerY - start.y,2));
+                //this.r = (Math.abs(this.centerX - start.x) - Math.abs(this.centerY - start.y) > 0) ? Math.abs(this.centerX - start.x) : Math.abs(this.centerY - start.y);
+                this.startAngle = 0;
+                this.endAngle = Math.PI*2;
+            }
+            draw(context, thickness, color){
+                context.lineWidth = thickness;
+                context.beginPath();
+                context.arc(this.centerX, this.centerY, this.r, this.startAngle, this.endAngle);
+                context.stroke();
             }
 
         }
    
-
         function getMousePosition(e){
             var point = new Point(e.offsetX==undefined?e.layerX:e.offsetX, e.offsetY==undefined?e.layerY:e.offsetY);
             return point;
         }
+     
         
       
 

@@ -119,6 +119,34 @@ window.onload = function(){
                                 mouseDownFlag = false;
                         }
                     break;    
+                case circleId:
+                        if (mouseDown){
+                            mouseDownFlag = true;
+                            clearCanvas(fg_canvas, fg_context);
+                            socket.emit('circleForServer', {
+                                start: start,
+                                mousePosition: getMousePosition(e),
+                                thickness: range_stick.value
+                            });
+                            let circleTmp = new Circle(start, getMousePosition(e));
+                            console.log(circleTmp.r);
+                            circleTmp.draw(fg_context, range_stick.value);
+                        }    
+                        else {
+                            if (mouseDownFlag){
+                                let circle = new Circle(start, finish);
+                                socket.emit('commitCircleForServer', {
+                                    start: start,
+                                    finish: finish,
+                                    thickness: range_stick.value
+                                });
+                                myObjects.add(circle);
+                                mouseDownFlag = false;
+                                clearCanvas(fg_canvas, fg_context);
+                                circle.draw(bg_context, range_stick.value);
+                                
+                            }
+                        }
             }               
     });
 
@@ -172,7 +200,18 @@ window.onload = function(){
             bg_context.drawImage(img, 0, 0);
         },200);
     });
-    
+    socket.on('tmpCircleForClients', function(data){
+        console.log(data);
+        clearCanvas(fg_canvas, fg_context);
+        let tmpCircle = new Circle(data.start, data.mousePosition);
+        tmpCircle.draw(fg_context, data.thickness);
+    });
+    socket.on('commitCircleForServer', function(data){
+        clearCanvas(fg_canvas, fg_context);
+        let commitedCircle = new Circle(data.start, data.finish);
+        commitedCircle.draw(bg_context, data.thickness);
+        objectsFromOthers.add(commitedCircle);
+    });
     
     formUpload.addEventListener('submit', function(e){
         e.preventDefault();
