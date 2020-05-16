@@ -71,7 +71,22 @@
                 context.arc(this.centerX, this.centerY, this.r, this.startAngle, this.endAngle);
                 context.stroke();
             }
-
+        }
+        class Rectangle{
+            constructor(start, Point){
+                this.startX = start.x;
+                this.startY = start.y;
+                // this.width = Math.abs(Point.x - this.startX);
+                // this.height = Math.abs(Point.y - this.startY);
+                this.width = Point.x - this.startX;
+                this.height = Point.y - this.startY;
+            }
+            draw(context, thickness, color){
+                context.lineWidth = thickness;
+                context.beginPath();
+                context.rect(this.startX, this.startY, this.width, this.height);
+                context.stroke();
+            }
         }
    
         function getMousePosition(e){

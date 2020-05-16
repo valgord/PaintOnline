@@ -24,6 +24,7 @@ window.onload = function(){
         penId = "pen",
         lineId = "line",
         circleId = "circle",
+        rectId = 'rectangle',
         chosenToolId = "pen",
         tools = document.querySelector('.tools'),
             tool = document.querySelectorAll('.tool');
@@ -123,7 +124,7 @@ window.onload = function(){
                         if (mouseDown){
                             mouseDownFlag = true;
                             clearCanvas(fg_canvas, fg_context);
-                            socket.emit('circleForServer', {
+                            socket.emit('tmpCircleForServer', {
                                 start: start,
                                 mousePosition: getMousePosition(e),
                                 thickness: range_stick.value
@@ -147,6 +148,34 @@ window.onload = function(){
                                 
                             }
                         }
+                        break;
+                case rectId:
+                    if (mouseDown){
+                        mouseDownFlag = true;
+                        clearCanvas(fg_canvas, fg_context);
+                        socket.emit('tmpRectForServer', {
+                            start: start,
+                            mousePosition: getMousePosition(e),
+                            thickness: range_stick.value
+                        });
+                        let rectTmp = new Rectangle(start, getMousePosition(e));
+                        rectTmp.draw(fg_context, range_stick.value);
+                    }    
+                    else {
+                        if (mouseDownFlag){
+                            let rect = new Rectangle(start, finish);
+                            socket.emit('commitRectForServer', {
+                                start: start,
+                                finish: finish,
+                                thickness: range_stick.value
+                            });
+                            myObjects.add(rect);
+                            mouseDownFlag = false;
+                            clearCanvas(fg_canvas, fg_context);
+                            rect.draw(bg_context, range_stick.value);                           
+                        }
+                    }
+                    break;                            
             }               
     });
 
@@ -206,12 +235,26 @@ window.onload = function(){
         let tmpCircle = new Circle(data.start, data.mousePosition);
         tmpCircle.draw(fg_context, data.thickness);
     });
-    socket.on('commitCircleForServer', function(data){
+    socket.on('commitCircleForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
         let commitedCircle = new Circle(data.start, data.finish);
         commitedCircle.draw(bg_context, data.thickness);
         objectsFromOthers.add(commitedCircle);
     });
+    socket.on('tmpRectForClients', function(data){
+        clearCanvas(fg_canvas, fg_context);
+        let tmpRect = new Rectangle(data.start, data.mousePosition);
+        tmpRect.draw(fg_context, data.thickness);
+    });
+    
+    socket.on('commitRectForClients', function(data){
+        clearCanvas(fg_canvas, fg_context);
+        let commitedRect = new Rectangle(data.start, data.finish);
+        commitedRect.draw(bg_context, data.thickness);
+        objectsFromOthers.add(commitedRect);
+    });
+
+
     
     formUpload.addEventListener('submit', function(e){
         e.preventDefault();

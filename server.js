@@ -93,11 +93,17 @@ io.on('connection', function(socket){
     socket.on('stepBackForServer', function(){
         socket.broadcast.emit('stepBackToClients', 'good job');
     });
-    socket.on('circleForServer', function(data){
+    socket.on('tmpCircleForServer', function(data){
         socket.broadcast.emit('tmpCircleForClients', data);
     });
     socket.on('commitCircleForServer', function(data){
-        socket.broadcast.emit('commitCircleForServer', data);
+        socket.broadcast.emit('commitCircleForClients', data);
+    });
+    socket.on('tmpRectForServer', function(data){
+        socket.broadcast.emit('tmpRectForClients', data);
+    });
+    socket.on('commitRectForServer', function(data){
+        socket.broadcast.emit('commitRectForClients', data);
     });
 });
 
