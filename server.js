@@ -8,6 +8,11 @@ const fs = require('fs');
 const formid = require('formidable');
 const multer = require('multer');
 var pathForImage ="";
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 8000;
+}
+app.listen(port);
 app.use(express.static('node_modules'));
 app.use(express.static('js'));
 app.use(express.static('css'));
@@ -92,6 +97,6 @@ io.on('connection', function(socket){
 });
 
 
-http.listen(3000, function(){
-    console.log("Port 3000 is listening...");
+http.listen(port, function(){
+    console.log(`Port ${port} is listening...`);
 });

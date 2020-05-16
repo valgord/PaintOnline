@@ -123,11 +123,6 @@ window.onload = function(){
     });
 
 
-    
-        
-
-
-
 
     socket.on('sendLineToClients', function(line){
         let new_line = new Line(line.start, line.finish, line.thickness);
