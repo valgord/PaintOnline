@@ -12,7 +12,6 @@ let port = process.env.PORT;
 if (port == null || port == "") {
   port = 8000;
 }
-app.listen(port);
 app.use(express.static('node_modules'));
 app.use(express.static('js'));
 app.use(express.static('css'));
