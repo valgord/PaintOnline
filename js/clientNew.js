@@ -25,20 +25,21 @@ window.onload = function(){
         lineId = "line",
         circleId = "circle",
         rectId = 'rectangle',
+        isosTriangleId = 'isoscelesTriangle';
         chosenToolId = "pen",
         tools = document.querySelector('.tools'),
-            tool = document.querySelectorAll('.tool');
-            tools.addEventListener('click', function(e){
-                    tool.forEach(function(tool){
-                        if (tool.parentNode.classList.contains('active'))
-                            tool.parentNode.classList.remove('active');
-                    });
-                    
-                    if (e.target.classList.contains('tool')){
-                        e.target.parentNode.classList.add('active');
-                        chosenToolId = e.target.id;
-                    }
-            });    
+        tool = document.querySelectorAll('.tool');
+        tools.addEventListener('click', function(e){
+                tool.forEach(function(tool){
+                    if (tool.parentNode.classList.contains('active'))
+                        tool.parentNode.classList.remove('active');
+                });
+                
+                if (e.target.classList.contains('tool')){
+                    e.target.parentNode.classList.add('active');
+                    chosenToolId = e.target.id;
+                }
+        });    
     let objects = [];        
     let mouseDown = false;
     let mouseDownFlag = false;
@@ -175,7 +176,36 @@ window.onload = function(){
                             rect.draw(bg_context, range_stick.value);                           
                         }
                     }
-                    break;                            
+                    break;    
+                case isosTriangleId:
+                    if (mouseDown){
+                        mouseDownFlag = true;
+                        clearCanvas(fg_canvas, fg_context);
+                        socket.emit('tmpIsoscelesTriangleForServer', {
+                            start: start,
+                            mousePosition: getMousePosition(e),
+                            thickness: range_stick.value
+                        });
+                        let isosTrTmp = new IsoscelesTriangle(start, getMousePosition(e));
+                        console.log(isosTrTmp);
+                        isosTrTmp.draw(fg_context, range_stick.value);
+                    }    
+                    else {
+                        if (mouseDownFlag){
+                            let isosTr = new IsoscelesTriangle(start, finish);
+                            socket.emit('commitIsoscelesTriangleForServer', {
+                                start: start,
+                                finish: finish,
+                                thickness: range_stick.value
+                            });
+                            myObjects.add(isosTr);
+                            mouseDownFlag = false;
+                            clearCanvas(fg_canvas, fg_context);
+                            isosTr.draw(bg_context, range_stick.value);                           
+                        }
+                    }
+                    break;  
+
             }               
     });
 
@@ -252,6 +282,17 @@ window.onload = function(){
         let commitedRect = new Rectangle(data.start, data.finish);
         commitedRect.draw(bg_context, data.thickness);
         objectsFromOthers.add(commitedRect);
+    });
+    socket.on('tmpIsoscelesTriangleForClients', function(data){
+        clearCanvas(fg_canvas, fg_context);
+        let tmpIsosTr = new IsoscelesTriangle(data.start, data.mousePosition);
+        tmpIsosTr.draw(fg_context, data.thickness);
+    });
+    socket.on('commitIsoscelesTriangleForClients', function(data){
+        clearCanvas(fg_canvas, fg_context);
+        let commitedIsosTr = new IsoscelesTriangle(data.start, data.finish);
+        commitedIsosTr.draw(bg_context, data.thickness);
+        objectsFromOthers.add(commitedIsosTr);
     });
 
 

@@ -73,13 +73,13 @@
             }
         }
         class Rectangle{
-            constructor(start, Point){
+            constructor(start, curPoint){
                 this.startX = start.x;
                 this.startY = start.y;
                 // this.width = Math.abs(Point.x - this.startX);
                 // this.height = Math.abs(Point.y - this.startY);
-                this.width = Point.x - this.startX;
-                this.height = Point.y - this.startY;
+                this.width = curPoint.x - this.startX;
+                this.height = curPoint.y - this.startY;
             }
             draw(context, thickness, color){
                 context.lineWidth = thickness;
@@ -88,7 +88,29 @@
                 context.stroke();
             }
         }
-   
+        class IsoscelesTriangle{
+            constructor(start, curPoint){
+                this.startX = start.x;
+                this.startY = start.y;
+                this.pointA = new Point(start.x, start.y);
+                this.pointB = new Point((start.x + curPoint.x)/2, curPoint.y);
+                this.pointC = new Point(curPoint.x, start.y);              
+            }
+            draw(context, thickness, color){
+                context.lineWidth = thickness;
+                context.beginPath();
+                context.moveTo(this.pointA.x, this.pointA.y);
+                context.lineTo(this.pointB.x, this.pointB.y);
+                context.stroke();
+                context.moveTo(this.pointB.x, this.pointB.y);
+                context.lineTo(this.pointC.x, this.pointC.y);
+                context.stroke();
+                context.moveTo(this.pointA.x, this.pointA.y);
+                context.lineTo(this.pointC.x, this.pointC.y);                
+                context.stroke();
+
+            }
+        }
         function getMousePosition(e){
             var point = new Point(e.offsetX==undefined?e.layerX:e.offsetX, e.offsetY==undefined?e.layerY:e.offsetY);
             return point;
