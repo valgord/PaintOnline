@@ -69,7 +69,7 @@ io.on('connection', function(socket){
         socket.broadcast.emit('sendLineToClients', line);
     });
     socket.on('clearCanvas', function(){
-        socket.broadcast.emit('clearCanvas');
+        socket.broadcast.emit('clearCanvasToClients');
     });
     socket.on('disconnect', function(){
         count--;
@@ -83,6 +83,12 @@ io.on('connection', function(socket){
     });
     socket.on('tmpLineDrawingToServer', function(line){
         socket.broadcast.emit('tmpLineDrawingToClients', line);
+    });
+    socket.on('tmpLineDrawingWithShiftToServer', function(line){
+        socket.broadcast.emit('tmpLineDrawingWithShiftToClients', line);
+    });
+    socket.on('sendLineWithShiftToServer', function(line){
+        socket.broadcast.emit('sendLineWithShiftToClients', line);
     });
     socket.on('linePartOfCurveToServer', function(line){
         socket.broadcast.emit('linePartOfCurveToClient', line);
