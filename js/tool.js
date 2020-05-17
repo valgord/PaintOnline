@@ -35,8 +35,9 @@
                 context.lineTo(this.finish.x, this.finish.y);
                 context.stroke();
                 context.beginPath();
-                context.arc(this.finish.x, this.finish.y, this.thickness/64, 0, Math.PI*2);
-                context.stroke();
+                context.arc(this.finish.x, this.finish.y, this.thickness/2, 0, Math.PI*2);
+                context.fill();
+                
             }
             // drawWithShift(context){
             //     context.beginPath();    
