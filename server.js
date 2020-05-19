@@ -3,6 +3,7 @@ var app = require('express')();
 const path = require('path');
 var http = require('http').Server(app);
 var count = 0; //количество подключившихся
+var localStorageToServer = '';
 var io = require('socket.io')(http);
 const fs = require('fs');
 const formid = require('formidable');
@@ -64,7 +65,12 @@ app.get('/', function(req, res){
 io.on('connection', function(socket){
     count++;
     io.sockets.emit('broadcast', count);
-
+    socket.emit('localStorageToClient',localStorageToServer);
+    socket.on('localStorageToServer', function(localStorage){
+       localStorageToServer = localStorage ;
+       console.log(localStorageToServer);
+       socket.broadcast.emit();
+    });
     socket.on('sendLineToServer', function(line){
         socket.broadcast.emit('sendLineToClients', line);
     });

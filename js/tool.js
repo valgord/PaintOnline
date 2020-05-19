@@ -175,12 +175,10 @@
         }
 
         class Circle{            
-            constructor(start, curPoint, thickness, color ){
-                this.centerX= (curPoint.x + start.x)/2;
-                this.centerY = (curPoint.y + start.y)/2;
-                this.r = Math.sqrt(Math.pow(this.centerX - start.x,2) + Math.pow(this.centerY - start.y,2));
+            constructor(center, r, thickness, color ){
+                this.center= center;
                 this.thickness = thickness;
-                //this.r = (Math.abs(this.centerX - start.x) - Math.abs(this.centerY - start.y) > 0) ? Math.abs(this.centerX - start.x) : Math.abs(this.centerY - start.y);
+                this.r = r;
                 this.startAngle = 0;
                 this.endAngle = Math.PI*2;
                 this.color = color;
@@ -188,25 +186,30 @@
             draw(context){
                 context.lineWidth = this.thickness;
                 context.beginPath();
-                context.arc(this.centerX, this.centerY, this.r, this.startAngle, this.endAngle);
+                context.arc(this.center.x, this.center.y, this.r, this.startAngle, this.endAngle);
                 context.stroke();
             }
         }
         class Rectangle{
-            constructor(start, curPoint, thickness, color){
-                this.startX = start.x;
-                this.startY = start.y;
+            // constructor(start, curPoint, thickness, color){
+            //     this.startX = start.x;
+            //     this.startY = start.y;
+            //     this.thickness = thickness;
+            //     this.color = color;
+            //     this.width = curPoint.x - this.startX;
+            //     this.height = curPoint.y - this.startY;
+            // }
+            constructor(start, width, height, thickness, color){
+                this.start = start;
                 this.thickness = thickness;
                 this.color = color;
-                // this.width = Math.abs(Point.x - this.startX);
-                // this.height = Math.abs(Point.y - this.startY);
-                this.width = curPoint.x - this.startX;
-                this.height = curPoint.y - this.startY;
+                this.width = width;
+                this.height = height;
             }
             draw(context){
                 context.lineWidth = this.thickness;
                 context.beginPath();
-                context.rect(this.startX, this.startY, this.width, this.height);
+                context.rect(this.start.x, this.start.y, this.width, this.height);
                 context.stroke();
             }
         }
@@ -239,10 +242,49 @@
             var point = new Point(e.offsetX==undefined?e.layerX:e.offsetX, e.offsetY==undefined?e.layerY:e.offsetY);
             return point;
         }
-     
+        
         
       
+        function parseToObjectForDrawing(objToBeParsed){
+            let objectsFromLocalstorage = new ObjectForDrawing();
+            if (objToBeParsed != null){
+                objMas = objToBeParsed.arrObjs;//просто сокращение кода. Нам поступает на вход JSON.parse(из локалсторэйж достаем объект, содержащий все нарисованные объекты)
+                for (let i = 0; i < objMas.length; i++){
+                    //----------проверяем, является ли очередной объект прямой-------------
+                    if (objMas[i].start && objMas[i].finish){ 
+                        let line = new Line(objMas[i].start, objMas[i].finish, objMas[i].thickness);
+                        objectsFromLocalstorage.add(line);
+                    }
+                    //----------проверяем, является ли очередной объект кривой-------------
+                    if (objMas[i].lines){
+                        let curve = new Curve();
+                        for (let j = 0; j < objMas[i].lines.length; j++){
+                            let line = new Line(objMas[i].lines[j].start, objMas[i].lines[j].finish, objMas[i].lines[j].thickness);
+                            curve.add(line);
+                        }
+                        objectsFromLocalstorage.add(curve);
+                    }
+                    //----------проверяем, является ли очередной объект окружностью-------------
+                    if (objMas[i].center && objMas[i].r){
+                        let circle = new Circle(objMas[i].center, objMas[i].r, objMas[i].thickness);
+                        objectsFromLocalstorage.add(circle);
+                    }
+                    //----------проверяем, является ли очередной объект прямоугольником-------------
+                    if (objMas[i].start && objMas[i].width && objMas[i].height){
+                        let new_rect = new Rectangle(objMas[i].start, objMas[i].width, objMas[i].height, objMas[i].thickness);
+                        objectsFromLocalstorage.add(new_rect);
+                    }
 
+
+
+
+
+
+                }
+                return objectsFromLocalstorage;
+            }
+ 
+        }
   
  
    

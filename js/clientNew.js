@@ -12,6 +12,7 @@ window.onload = function(){
     let clearCanv = document.getElementById('clearCanvas');
         clearCanv.addEventListener('click', () => {
             clearCanvas(bg_canvas, bg_context);
+            localStorage.clear();
             myObjects = new ObjectForDrawing();
             objectsFromOthers = new ObjectForDrawing();
             socket.emit('clearCanvas');
@@ -21,6 +22,7 @@ window.onload = function(){
         }
 
 
+        
     let start = new Point(100, 100),
         finish = new Point(-1,-1),
         penId = "pen",
@@ -48,14 +50,30 @@ window.onload = function(){
     let coords = [];
     let myObjects = new ObjectForDrawing();
     let objectsFromOthers = new ObjectForDrawing();
+    let myObjectsFromLocalStorage = new ObjectForDrawing();
+    if (localStorage.getItem('myObjects') != null){
+        myObjectsFromLocalStorage = parseToObjectForDrawing(JSON.parse(localStorage.getItem('myObjects')));
+        myObjectsFromLocalStorage.draw(bg_context);
+        myObjects = myObjectsFromLocalStorage;
+    } 
+    if (localStorage.getItem('objectsFromOthers') != null){
+        objectsFromOthersFromLocalStorage = parseToObjectForDrawing(JSON.parse(localStorage.getItem('objectsFromOthers')));
+        objectsFromOthersFromLocalStorage.draw(bg_context);
+        objectsFromOthers = objectsFromOthersFromLocalStorage;
+    } 
     let curve = new Curve();   
     let curveFromOthers = new Curve(); 
     let stepBack = document.getElementById('back');
     let shiftLeftIsDown = false;
+    let objectsForLocalStorage = [];
+
     let input_file = document.getElementById('input_file'),
         formUpload = document.forms.namedItem('formUpload');
     stepBack.addEventListener('click', function(){
         myObjects.removeLast();
+        console.log(myObjects);
+        console.log(objectsFromOthers);
+        localStorage.setItem('myObjects', JSON.stringify(myObjects));
         clearCanvas(bg_canvas, bg_context);
         myObjects.draw(bg_context);
         objectsFromOthers.draw(bg_context);
@@ -118,6 +136,9 @@ window.onload = function(){
                                                                  
                             mouseDownFlag = false;
                             myObjects.add(line);
+                            localStorage.clear();
+                            localStorage.setItem('myObjects', JSON.stringify(myObjects));
+                            socket.emit('localStorageToServer', JSON.stringify(myObjects));
                          }
                      }  
                     break;
@@ -140,6 +161,10 @@ window.onload = function(){
                     else
                         if(mouseDownFlag){
                                 myObjects.add(curve);
+                                localStorage.clear();
+                                localStorage.setItem('myObjects', JSON.stringify(myObjects));
+                                localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
+                                console.log(JSON.parse(localStorage.getItem('myObjects')));
                                 socket.emit('curveIsDoneForServer');
                             // objects.push(curve);
                                 coords = [];
@@ -148,26 +173,40 @@ window.onload = function(){
                         }
                     break;    
                 case circleId:
+                    let circleRadius = 0;
+                    let circleCenter = new Point();
                         if (mouseDown){
                             mouseDownFlag = true;
                             clearCanvas(fg_canvas, fg_context);
+                            circleCenter.x = (getMousePosition(e).x + start.x)/2;
+                            circleCenter.y = (getMousePosition(e).y + start.y)/2;
+                            circleRadius = Math.sqrt(Math.pow(circleCenter.x - start.x,2) + Math.pow(circleCenter.y - start.y,2));
+                            console.log(circleCenter); 
+                            console.log(circleRadius);
                             socket.emit('tmpCircleForServer', {
-                                start: start,
-                                mousePosition: getMousePosition(e),
+                                center: circleCenter,
+                                r: circleRadius,
                                 thickness: range_stick.value
                             });
-                            let circleTmp = new Circle(start, getMousePosition(e), range_stick.value);
+                            let circleTmp = new Circle(circleCenter, circleRadius, range_stick.value);
                             circleTmp.draw(fg_context);
                         }    
                         else {
                             if (mouseDownFlag){
-                                let circle = new Circle(start, finish, range_stick.value);
+                                circleCenter.x = (finish.x + start.x)/2;
+                                circleCenter.y = (finish.y + start.y)/2;
+                                circleRadius = Math.sqrt(Math.pow(circleCenter.x - start.x,2) + Math.pow(circleCenter.y - start.y,2));
+                                let circle = new Circle(circleCenter, circleRadius, range_stick.value);
                                 socket.emit('commitCircleForServer', {
-                                    start: start,
-                                    finish: finish,
+                                    center: circleCenter,
+                                    r: circleRadius,
                                     thickness: range_stick.value
                                 });
                                 myObjects.add(circle);
+                                localStorage.clear();
+                                localStorage.setItem('myObjects', JSON.stringify(myObjects));
+                                localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
+                                console.log(JSON.parse(localStorage.getItem('myObjects')));
                                 mouseDownFlag = false;
                                 clearCanvas(fg_canvas, fg_context);
                                 circle.draw(bg_context);
@@ -176,26 +215,40 @@ window.onload = function(){
                         }
                         break;
                 case rectId:
+                    let width = 0;
+                    let height = 0;
                     if (mouseDown){
                         mouseDownFlag = true;
                         clearCanvas(fg_canvas, fg_context);
+                        width = getMousePosition(e).x - start.x;
+                        height = getMousePosition(e).y - start.y;
                         socket.emit('tmpRectForServer', {
                             start: start,
-                            mousePosition: getMousePosition(e),
+                            width: width,
+                            height: height,
                             thickness: range_stick.value
                         });
-                        let rectTmp = new Rectangle(start, getMousePosition(e), range_stick.value);
+                        let rectTmp = new Rectangle(start, width, height, range_stick.value);
                         rectTmp.draw(fg_context);
                     }    
                     else {
                         if (mouseDownFlag){
-                            let rect = new Rectangle(start, finish, range_stick.value);
+                            width = finish.x - start.x;
+                            height = finish.y - start.y;
+                            let rect = new Rectangle(start, width, height, range_stick.value);
                             socket.emit('commitRectForServer', {
                                 start: start,
-                                finish: finish,
+                                width: width,
+                                height: height,
                                 thickness: range_stick.value
                             });
+                            console.log(rect);
+                            console.log(width + " " + height);
                             myObjects.add(rect);
+                            localStorage.clear();
+                            localStorage.setItem('myObjects', JSON.stringify(myObjects)); 
+                            localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
+                            console.log(JSON.parse(localStorage.getItem('myObjects')));                               
                             mouseDownFlag = false;
                             clearCanvas(fg_canvas, fg_context);
                             rect.draw(bg_context);                           
@@ -223,6 +276,9 @@ window.onload = function(){
                                 thickness: range_stick.value
                             });
                             myObjects.add(isosTr);
+                            localStorage.clear();
+                            localStorage.setItem('myObjects', JSON.stringify(myObjects));   
+                            localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));                             
                             mouseDownFlag = false;
                             clearCanvas(fg_canvas, fg_context);
                             isosTr.draw(bg_context);                           
@@ -231,7 +287,13 @@ window.onload = function(){
                     break;  
             }               
     });
-
+    // socket.on('localStorageToClients', function(localStorageFromServer){
+    //     let LSFromServer = parseToObjectForDrawing(JSON.parse(localStorageFromServer));
+        
+    //     LSFromServer.draw(bg_context);
+    //     localStorage.clear();
+    //     localStorage.setItem('myObjects', JSON.stringify(LSFromServer));
+    // });
     socket.on('clearCanvasToClients', function(){
         clearCanvas(bg_canvas, bg_context);
         myObjects = new ObjectForDrawing();
@@ -274,6 +336,7 @@ window.onload = function(){
     socket.on('stepBackToClients', function(){
         console.log(objectsFromOthers);
         objectsFromOthers.removeLast();
+        localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
         clearCanvas(bg_canvas, bg_context);
         myObjects.draw(bg_context);
         objectsFromOthers.draw(bg_context);
@@ -294,24 +357,24 @@ window.onload = function(){
     });
     socket.on('tmpCircleForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
-        let tmpCircle = new Circle(data.start, data.mousePosition, data.thickness);
+        let tmpCircle = new Circle(data.center, data.r, data.thickness);
         tmpCircle.draw(fg_context);
     });
     socket.on('commitCircleForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
-        let commitedCircle = new Circle(data.start, data.finish, data.thickness);
+        let commitedCircle = new Circle(data.center, data.r, data.thickness);
         commitedCircle.draw(bg_context);
         objectsFromOthers.add(commitedCircle);
     });
     socket.on('tmpRectForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
-        let tmpRect = new Rectangle(data.start, data.mousePosition, data.thickness);
+        let tmpRect = new Rectangle(data.start, data.width, data.height, data.thickness);
         tmpRect.draw(fg_context);
     });
     
     socket.on('commitRectForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
-        let commitedRect = new Rectangle(data.start, data.finish, data.thickness);
+        let commitedRect = new Rectangle(data.start, data.width, data.height, data.thickness);
         commitedRect.draw(bg_context);
         objectsFromOthers.add(commitedRect);
     });
@@ -344,4 +407,6 @@ window.onload = function(){
             // };
             // request.send(fileData);
     });
+    
+
 };
