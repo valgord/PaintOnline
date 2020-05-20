@@ -136,9 +136,8 @@ window.onload = function(){
                                                                  
                             mouseDownFlag = false;
                             myObjects.add(line);
-                            localStorage.clear();
                             localStorage.setItem('myObjects', JSON.stringify(myObjects));
-                            socket.emit('localStorageToServer', JSON.stringify(myObjects));
+                            socket.emit('myObjectsToServer', JSON.stringify(myObjects));
                          }
                      }  
                     break;
@@ -163,8 +162,7 @@ window.onload = function(){
                                 myObjects.add(curve);
                                 localStorage.clear();
                                 localStorage.setItem('myObjects', JSON.stringify(myObjects));
-                                localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
-                                console.log(JSON.parse(localStorage.getItem('myObjects')));
+                                socket.emit('myObjectsToServer', JSON.stringify(myObjects));
                                 socket.emit('curveIsDoneForServer');
                             // objects.push(curve);
                                 coords = [];
@@ -203,10 +201,8 @@ window.onload = function(){
                                     thickness: range_stick.value
                                 });
                                 myObjects.add(circle);
-                                localStorage.clear();
                                 localStorage.setItem('myObjects', JSON.stringify(myObjects));
-                                localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
-                                console.log(JSON.parse(localStorage.getItem('myObjects')));
+                                socket.emit('myObjectsToServer', JSON.stringify(myObjects));
                                 mouseDownFlag = false;
                                 clearCanvas(fg_canvas, fg_context);
                                 circle.draw(bg_context);
@@ -245,10 +241,8 @@ window.onload = function(){
                             console.log(rect);
                             console.log(width + " " + height);
                             myObjects.add(rect);
-                            localStorage.clear();
-                            localStorage.setItem('myObjects', JSON.stringify(myObjects)); 
-                            localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
-                            console.log(JSON.parse(localStorage.getItem('myObjects')));                               
+                            localStorage.setItem('myObjects', JSON.stringify(myObjects));
+                            socket.emit('myObjectsToServer', JSON.stringify(myObjects));                              
                             mouseDownFlag = false;
                             clearCanvas(fg_canvas, fg_context);
                             rect.draw(bg_context);                           
@@ -276,9 +270,8 @@ window.onload = function(){
                                 thickness: range_stick.value
                             });
                             myObjects.add(isosTr);
-                            localStorage.clear();
-                            localStorage.setItem('myObjects', JSON.stringify(myObjects));   
-                            localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));                             
+                            localStorage.setItem('myObjects', JSON.stringify(myObjects));
+                            socket.emit('myObjectsToServer', JSON.stringify(myObjects));                          
                             mouseDownFlag = false;
                             clearCanvas(fg_canvas, fg_context);
                             isosTr.draw(bg_context);                           
@@ -298,6 +291,7 @@ window.onload = function(){
         clearCanvas(bg_canvas, bg_context);
         myObjects = new ObjectForDrawing();
         objectsFromOthers = new ObjectForDrawing();
+        localStorage.clear();
     });
     socket.on('sendLineToClients', function(line){
         clearCanvas(fg_canvas, fg_context);
@@ -389,7 +383,12 @@ window.onload = function(){
         commitedIsosTr.draw(bg_context);
         objectsFromOthers.add(commitedIsosTr);
     });
-
+    socket.on('objectsFromOthersToClients', function(data){
+        console.log("info");
+        let obj = new parseToObjectForDrawing(JSON.parse(data));
+        objectsFromOthers = obj;
+        localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
+    });
 
     
     formUpload.addEventListener('submit', function(e){

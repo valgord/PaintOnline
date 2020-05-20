@@ -123,6 +123,9 @@ io.on('connection', function(socket){
     socket.on('commitIsoscelesTriangleForServer', function(data){
         socket.broadcast.emit('commitIsoscelesTriangleForClients', data);
     });
+    socket.on('myObjectsToServer', function(data){
+        socket.broadcast.emit('objectsFromOthersToClients', data);
+    });
 });
 
 http.listen(port, function(){
