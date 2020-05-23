@@ -3,20 +3,23 @@ var app = require('express')();
 const path = require('path');
 var http = require('http').Server(app);
 var count = 0; //количество подключившихся
-var localStorageToServer = '';
+var localStorageToServer = 'empty';
 var io = require('socket.io')(http);
 const fs = require('fs');
 const formid = require('formidable');
 const multer = require('multer');
 var pathForImage ="";
+let arrIds = [];//массив, состоящий из id сокетов
 let port = process.env.PORT;
 if (port == null || port == "") {
   port = 8000;
 }
+
 app.use(express.static('node_modules'));
 app.use(express.static('js'));
 app.use(express.static('css'));
 app.use(express.static('img'));
+app.use(express.static('colorPicker'));
 const storageConfig = multer.diskStorage({
     destination: (req, file, cb) =>{
         cb(null, "uploadedImages");
@@ -61,16 +64,12 @@ app.get('/paintonline', function(req, res){
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/paint.html');
 });
-
 io.on('connection', function(socket){
+    console.log(io.sockets.connected[socket.id].id);
     count++;
-    io.sockets.emit('broadcast', count);
-    socket.emit('localStorageToClient',localStorageToServer);
-    socket.on('localStorageToServer', function(localStorage){
-       localStorageToServer = localStorage ;
-       console.log(localStorageToServer);
-       socket.broadcast.emit();
-    });
+        io.sockets.emit('broadcast', {
+            count: count,
+        });
     socket.on('sendLineToServer', function(line){
         socket.broadcast.emit('sendLineToClients', line);
     });
@@ -79,7 +78,9 @@ io.on('connection', function(socket){
     });
     socket.on('disconnect', function(){
         count--;
-        io.sockets.emit('broadcast', count);
+        io.sockets.emit('broadcast', {
+            count: count
+        });
     });
     socket.on('circleToServer', function(data) {
         socket.broadcast.emit('circleToClients', data);
@@ -99,8 +100,8 @@ io.on('connection', function(socket){
     socket.on('linePartOfCurveToServer', function(line){
         socket.broadcast.emit('linePartOfCurveToClient', line);
     });
-    socket.on('curveIsDoneForServer', function(){
-        socket.broadcast.emit('curveIsDoneForClient');
+    socket.on('curveIsDoneForServer', function(data){
+        socket.broadcast.emit('curveIsDoneForClient', 'ok');
     });
     socket.on('stepBackForServer', function(){
         socket.broadcast.emit('stepBackToClients', 'good job');
@@ -124,8 +125,12 @@ io.on('connection', function(socket){
         socket.broadcast.emit('commitIsoscelesTriangleForClients', data);
     });
     socket.on('myObjectsToServer', function(data){
+        localStorageToServer = data;
+        console.log(localStorageToServer);
         socket.broadcast.emit('objectsFromOthersToClients', data);
     });
+
+
 });
 
 http.listen(port, function(){

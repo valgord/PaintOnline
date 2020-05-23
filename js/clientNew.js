@@ -5,7 +5,8 @@ window.onload = function(){
     let bg_context = bg_canvas.getContext('2d'),
         fg_context = fg_canvas.getContext('2d'),
         range_stick = document.getElementById('range_stick'),
-        range_value = document.querySelector('.range_value');
+        range_value = document.querySelector('.range_value'),
+        color = document.getElementById('color');
         range_stick.addEventListener('input', function(){
             range_value.textContent = range_stick.value; 
         });      
@@ -20,7 +21,6 @@ window.onload = function(){
         function clearCanvas(canvas, context){
             context.clearRect(0, 0, canvas.width, canvas.height);    
         }
-
 
         
     let start = new Point(100, 100),
@@ -100,8 +100,8 @@ window.onload = function(){
             fg_context.lineWidth = range_stick.value;
             switch(chosenToolId){
                 case lineId:
-                    let line = new Line(start, finish, range_stick.value);
-                    let tmpLine = new Line(start, finish, range_stick.value);
+                    let line = new Line(start, finish, range_stick.value, color.value);
+                    let tmpLine = new Line(start, finish, range_stick.value, color.value);
                     if (mouseDown)
                         {
                             line.start = start;
@@ -138,11 +138,12 @@ window.onload = function(){
                             myObjects.add(line);
                             localStorage.setItem('myObjects', JSON.stringify(myObjects));
                             socket.emit('myObjectsToServer', JSON.stringify(myObjects));
+                            console.log(line.color);
                          }
                      }  
                     break;
                 case penId:                    
-                    let linePartOfCurve = new Line(start, finish, range_stick.value);
+                    let linePartOfCurve = new Line(start, finish, range_stick.value, color.value);
                     if (mouseDown){                       
                         let p = getMousePosition(e);
                         linePartOfCurve.start = p;
@@ -163,7 +164,7 @@ window.onload = function(){
                                 localStorage.clear();
                                 localStorage.setItem('myObjects', JSON.stringify(myObjects));
                                 socket.emit('myObjectsToServer', JSON.stringify(myObjects));
-                                socket.emit('curveIsDoneForServer');
+                                //socket.emit('curveIsDoneForServer', 'ok');
                             // objects.push(curve);
                                 coords = [];
                                 curve = new Curve();
@@ -184,9 +185,10 @@ window.onload = function(){
                             socket.emit('tmpCircleForServer', {
                                 center: circleCenter,
                                 r: circleRadius,
-                                thickness: range_stick.value
+                                thickness: range_stick.value,
+                                color: color.value
                             });
-                            let circleTmp = new Circle(circleCenter, circleRadius, range_stick.value);
+                            let circleTmp = new Circle(circleCenter, circleRadius, range_stick.value, color.value);
                             circleTmp.draw(fg_context);
                         }    
                         else {
@@ -194,11 +196,12 @@ window.onload = function(){
                                 circleCenter.x = (finish.x + start.x)/2;
                                 circleCenter.y = (finish.y + start.y)/2;
                                 circleRadius = Math.sqrt(Math.pow(circleCenter.x - start.x,2) + Math.pow(circleCenter.y - start.y,2));
-                                let circle = new Circle(circleCenter, circleRadius, range_stick.value);
+                                let circle = new Circle(circleCenter, circleRadius, range_stick.value, color.value);
                                 socket.emit('commitCircleForServer', {
                                     center: circleCenter,
                                     r: circleRadius,
-                                    thickness: range_stick.value
+                                    thickness: range_stick.value,
+                                    color: color.value
                                 });
                                 myObjects.add(circle);
                                 localStorage.setItem('myObjects', JSON.stringify(myObjects));
@@ -224,22 +227,21 @@ window.onload = function(){
                             height: height,
                             thickness: range_stick.value
                         });
-                        let rectTmp = new Rectangle(start, width, height, range_stick.value);
+                        let rectTmp = new Rectangle(start, width, height, range_stick.value, color.value);
                         rectTmp.draw(fg_context);
                     }    
                     else {
                         if (mouseDownFlag){
                             width = finish.x - start.x;
                             height = finish.y - start.y;
-                            let rect = new Rectangle(start, width, height, range_stick.value);
+                            let rect = new Rectangle(start, width, height, range_stick.value, color.value);
                             socket.emit('commitRectForServer', {
                                 start: start,
                                 width: width,
                                 height: height,
-                                thickness: range_stick.value
+                                thickness: range_stick.value,
+                                color: color.value
                             });
-                            console.log(rect);
-                            console.log(width + " " + height);
                             myObjects.add(rect);
                             localStorage.setItem('myObjects', JSON.stringify(myObjects));
                             socket.emit('myObjectsToServer', JSON.stringify(myObjects));                              
@@ -252,41 +254,45 @@ window.onload = function(){
                 case isosTriangleId:
                     if (mouseDown){
                         mouseDownFlag = true;
+                        let curPoint = getMousePosition(e);
+                        let pointA = new Point(start.x, start.y);
+                        let pointB = new Point((start.x + curPoint.x)/2, curPoint.y);
+                        let pointC = new Point(curPoint.x, start.y); 
                         clearCanvas(fg_canvas, fg_context);
                         socket.emit('tmpIsoscelesTriangleForServer', {
-                            start: start,
-                            mousePosition: getMousePosition(e),
+                            pointA: pointA,
+                            pointB: pointB,
+                            pointC: pointC,
                             thickness: range_stick.value
                         });
-                        let isosTrTmp = new IsoscelesTriangle(start, getMousePosition(e), range_stick.value);
+                        let isosTrTmp = new IsoscelesTriangle(pointA, pointB, pointC, range_stick.value, color.value);
                         isosTrTmp.draw(fg_context);
                     }    
                     else {
                         if (mouseDownFlag){
-                            let isosTr = new IsoscelesTriangle(start, finish, range_stick.value);
+                            let pointA = new Point(start.x, start.y);
+                            let pointB = new Point((start.x + finish.x)/2, finish.y);
+                            let pointC = new Point(finish.x, start.y); 
+                            let isosTr = new IsoscelesTriangle(pointA, pointB, pointC, range_stick.value, color.value);
                             socket.emit('commitIsoscelesTriangleForServer', {
-                                start: start,
-                                finish: finish,
-                                thickness: range_stick.value
+                                pointA: pointA,
+                                pointB: pointB,
+                                pointC: pointC,
+                                thickness: range_stick.value,
+                                color: color.value
                             });
                             myObjects.add(isosTr);
                             localStorage.setItem('myObjects', JSON.stringify(myObjects));
                             socket.emit('myObjectsToServer', JSON.stringify(myObjects));                          
                             mouseDownFlag = false;
                             clearCanvas(fg_canvas, fg_context);
-                            isosTr.draw(bg_context);                           
+                            isosTr.draw(bg_context);  
+                            console.log(myObjects);                              
                         }
                     }
                     break;  
             }               
     });
-    // socket.on('localStorageToClients', function(localStorageFromServer){
-    //     let LSFromServer = parseToObjectForDrawing(JSON.parse(localStorageFromServer));
-        
-    //     LSFromServer.draw(bg_context);
-    //     localStorage.clear();
-    //     localStorage.setItem('myObjects', JSON.stringify(LSFromServer));
-    // });
     socket.on('clearCanvasToClients', function(){
         clearCanvas(bg_canvas, bg_context);
         myObjects = new ObjectForDrawing();
@@ -295,91 +301,88 @@ window.onload = function(){
     });
     socket.on('sendLineToClients', function(line){
         clearCanvas(fg_canvas, fg_context);
-        let new_line = new Line(line.start, line.finish, line.thickness);
+        let new_line = new Line(line.start, line.finish, line.thickness, line.color);
             new_line.draw(bg_context);
             objectsFromOthers.add(new_line);
     });
     socket.on('tmpLineDrawingToClients', function(line){
-        let new_tmpLine = new Line(line.start, line.finish, line.thickness);
+        let new_tmpLine = new Line(line.start, line.finish, line.thickness, line.color);
         clearCanvas(fg_canvas, fg_context);
         new_tmpLine.draw(fg_context);
     });
     socket.on('tmpLineDrawingWithShiftToClients', function(line){
-        let new_tmpLine = new Line(line.start, line.finish, line.thickness);
+        let new_tmpLine = new Line(line.start, line.finish, line.thickness, line.color);
         clearCanvas(fg_canvas, fg_context);
         new_tmpLine.draw(fg_context);
     });
     socket.on('sendLineWithShiftToClients', function(line){
         clearCanvas(fg_canvas, fg_context);
-        let new_line = new Line(line.start, line.finish, line.thickness);
+        let new_line = new Line(line.start, line.finish, line.thickness, line.color);
            objectsFromOthers.add(new_line);
             new_line.draw(bg_context);
     });    
     
     socket.on('linePartOfCurveToClient', function(data){
-        let my_line  = new Line(data.start, data.finish, data.thickness);
+        let my_line  = new Line(data.start, data.finish, data.thickness, data.color);
         my_line.draw(bg_context);
         curveFromOthers.add(my_line);
     });
-    socket.on('curveIsDoneForClient', function(){
-        //myObjects.add(curveFromOthers);
-        objectsFromOthers.add(curveFromOthers);
-        curveFromOthers = new Curve();
+    socket.on('curveIsDoneForClient', function(data){
+    curveFromOthers = new Curve();
     });
 
-    socket.on('stepBackToClients', function(){
+    socket.on('stepBackToClients', function(data){
         console.log(objectsFromOthers);
         objectsFromOthers.removeLast();
+        console.log(objectsFromOthers);
         localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
         clearCanvas(bg_canvas, bg_context);
         myObjects.draw(bg_context);
         objectsFromOthers.draw(bg_context);
     });
-    socket.on('broadcast', function(count){
+    socket.on('broadcast', function(data){
         let usersCount = document.querySelector('.countOfUsers');
-        usersCount.textContent = count;
+        usersCount.textContent = data.count;
     });
     socket.on('imageDrawForClients', function(path){
         var img = new Image();
         img.src = path;
-        img.width = 300;
-        img.height = 300;
         console.log(img);
         setTimeout(function(){
-            bg_context.drawImage(img, 0, 0);
+            bg_context.drawImage(img, 0, 0, 500, 900);
         },200);
     });
     socket.on('tmpCircleForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
-        let tmpCircle = new Circle(data.center, data.r, data.thickness);
+        let tmpCircle = new Circle(data.center, data.r, data.thickness, data.color);
         tmpCircle.draw(fg_context);
     });
     socket.on('commitCircleForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
-        let commitedCircle = new Circle(data.center, data.r, data.thickness);
+        let commitedCircle = new Circle(data.center, data.r, data.thickness, data.color);
         commitedCircle.draw(bg_context);
         objectsFromOthers.add(commitedCircle);
     });
     socket.on('tmpRectForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
-        let tmpRect = new Rectangle(data.start, data.width, data.height, data.thickness);
+        let tmpRect = new Rectangle(data.start, data.width, data.height, data.thickness, data.color);
         tmpRect.draw(fg_context);
     });
     
     socket.on('commitRectForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
-        let commitedRect = new Rectangle(data.start, data.width, data.height, data.thickness);
+        let commitedRect = new Rectangle(data.start, data.width, data.height, data.thickness, data.color);
         commitedRect.draw(bg_context);
         objectsFromOthers.add(commitedRect);
     });
     socket.on('tmpIsoscelesTriangleForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
-        let tmpIsosTr = new IsoscelesTriangle(data.start, data.mousePosition, data.thickness);
+        let tmpIsosTr = new IsoscelesTriangle(data.pointA, data.pointB, data.pointC, data.thickness, data.color);
         tmpIsosTr.draw(fg_context);
     });
     socket.on('commitIsoscelesTriangleForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
-        let commitedIsosTr = new IsoscelesTriangle(data.start, data.finish, data.thickness);
+        let commitedIsosTr = new IsoscelesTriangle(data.pointA, data.pointB, data.pointC, data.thickness, data.color);
         commitedIsosTr.draw(bg_context);
         objectsFromOthers.add(commitedIsosTr);
     });
@@ -388,24 +391,30 @@ window.onload = function(){
         let obj = new parseToObjectForDrawing(JSON.parse(data));
         objectsFromOthers = obj;
         localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
-    });
-
-    
+    });  
     formUpload.addEventListener('submit', function(e){
         e.preventDefault();
         console.log(document.getElementById("input_file").files[0]);
-            // let fileData = new FormData(formUpload);
-            // let request = new XMLHttpRequest();
-            // request.open("POST", '/upload', true);
-            // request.onreadystatechange = function(){
-            //     console.log(request.readyState);
-            //     if(request.readyState == 4)
-            //         setTimeout(function(){
-            //             socket.emit('imageDrawForServer');
-            //         },200);        
-            // };
-            // request.send(fileData);
+            let fileData = new FormData(formUpload);
+            let request = new XMLHttpRequest();
+            request.open("POST", '/upload', true);
+            request.onreadystatechange = function(){
+                console.log(request.readyState);
+                if(request.readyState == 4)
+                    setTimeout(function(){
+                        socket.emit('imageDrawForServer');
+                        socket.emit('readyToDrawIfImageUploaded');
+                    },200);        
+            };
+            request.send(fileData);
     });
-    
+    socket.on('imageDrawingIsAllowed', function(){
+        var img = new Image();
+        img.src = `/uploadedImages/${document.getElementById("input_file").files[0].name}`;
+        console.log(img);
+        setTimeout(function(){
+            bg_context.drawImage(img, 0, 0, 500, 900);
+        },200);
+    });
 
 };

@@ -22,19 +22,22 @@
             }
         }
         class Line {
-            constructor(start, finish, thickness)
+            constructor(start, finish, thickness, color)
             {
+                this.color = color;
                 this.start = start;
                 this.finish = finish;
                 this.thickness = thickness;
             }
             draw(context){
                 context.lineWidth = this.thickness;
+                context.strokeStyle = this.color;
                 context.beginPath();    
                 context.moveTo(this.start.x, this.start.y);
                 context.lineTo(this.finish.x, this.finish.y);
                 context.stroke();
                 context.beginPath();
+                context.fillStyle = this.color;
                 context.arc(this.finish.x, this.finish.y, this.thickness/2, 0, Math.PI*2);
                 context.fill();
                 
@@ -185,20 +188,13 @@
             }
             draw(context){
                 context.lineWidth = this.thickness;
+                context.strokeStyle = this.color;
                 context.beginPath();
                 context.arc(this.center.x, this.center.y, this.r, this.startAngle, this.endAngle);
                 context.stroke();
             }
         }
         class Rectangle{
-            // constructor(start, curPoint, thickness, color){
-            //     this.startX = start.x;
-            //     this.startY = start.y;
-            //     this.thickness = thickness;
-            //     this.color = color;
-            //     this.width = curPoint.x - this.startX;
-            //     this.height = curPoint.y - this.startY;
-            // }
             constructor(start, width, height, thickness, color){
                 this.start = start;
                 this.thickness = thickness;
@@ -208,23 +204,24 @@
             }
             draw(context){
                 context.lineWidth = this.thickness;
+                context.strokeStyle = this.color;
                 context.beginPath();
                 context.rect(this.start.x, this.start.y, this.width, this.height);
                 context.stroke();
             }
         }
         class IsoscelesTriangle{
-            constructor(start, curPoint, thickness, color){
-                this.startX = start.x;
-                this.startY = start.y;
+
+            constructor(pointA, pointB, pointC, thickness, color){
+                this.pointA = pointA;
+                this.pointB = pointB;
+                this.pointC = pointC;
                 this.thickness = thickness;
-                this.color = color;
-                this.pointA = new Point(start.x, start.y);
-                this.pointB = new Point((start.x + curPoint.x)/2, curPoint.y);
-                this.pointC = new Point(curPoint.x, start.y);              
+                this.color = color;              
             }
             draw(context){
                 context.lineWidth = this.thickness;
+                context.strokeStyle = this.color;
                 context.beginPath();
                 context.moveTo(this.pointA.x, this.pointA.y);
                 context.lineTo(this.pointB.x, this.pointB.y);
@@ -252,29 +249,33 @@
                 for (let i = 0; i < objMas.length; i++){
                     //----------проверяем, является ли очередной объект прямой-------------
                     if (objMas[i].start && objMas[i].finish){ 
-                        let line = new Line(objMas[i].start, objMas[i].finish, objMas[i].thickness);
+                        let line = new Line(objMas[i].start, objMas[i].finish, objMas[i].thickness, objMas[i].color);
                         objectsFromLocalstorage.add(line);
                     }
                     //----------проверяем, является ли очередной объект кривой-------------
                     if (objMas[i].lines){
                         let curve = new Curve();
                         for (let j = 0; j < objMas[i].lines.length; j++){
-                            let line = new Line(objMas[i].lines[j].start, objMas[i].lines[j].finish, objMas[i].lines[j].thickness);
+                            let line = new Line(objMas[i].lines[j].start, objMas[i].lines[j].finish, objMas[i].lines[j].thickness, objMas[i].lines[j].color);
                             curve.add(line);
                         }
                         objectsFromLocalstorage.add(curve);
                     }
                     //----------проверяем, является ли очередной объект окружностью-------------
                     if (objMas[i].center && objMas[i].r){
-                        let circle = new Circle(objMas[i].center, objMas[i].r, objMas[i].thickness);
+                        let circle = new Circle(objMas[i].center, objMas[i].r, objMas[i].thickness, objMas[i].color);
                         objectsFromLocalstorage.add(circle);
                     }
                     //----------проверяем, является ли очередной объект прямоугольником-------------
                     if (objMas[i].start && objMas[i].width && objMas[i].height){
-                        let new_rect = new Rectangle(objMas[i].start, objMas[i].width, objMas[i].height, objMas[i].thickness);
+                        let new_rect = new Rectangle(objMas[i].start, objMas[i].width, objMas[i].height, objMas[i].thickness, objMas[i].color);
                         objectsFromLocalstorage.add(new_rect);
                     }
-
+                     //----------проверяем, является ли очередной объект равнобедренным треугольником-------------    
+                    if (objMas[i].pointA && objMas[i].pointB && objMas[i].pointC){
+                        let newTriangle = new IsoscelesTriangle(objMas[i].pointA, objMas[i].pointB, objMas[i].pointC, objMas[i].thickness,objMas[i].color);
+                        objectsFromLocalstorage.add(newTriangle);
+                    }
 
 
 
