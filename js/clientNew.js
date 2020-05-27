@@ -6,7 +6,8 @@ window.onload = function(){
         fg_context = fg_canvas.getContext('2d'),
         range_stick = document.getElementById('range_stick'),
         range_value = document.querySelector('.range_value'),
-        color = document.getElementById('color');
+        //color = document.getElementById('color');
+        color = 'black';
         range_stick.addEventListener('input', function(){
             range_value.textContent = range_stick.value; 
         });      
@@ -348,9 +349,7 @@ window.onload = function(){
         var img = new Image();
         img.src = path;
         console.log(img);
-        setTimeout(function(){
-            bg_context.drawImage(img, 0, 0, 500, 900);
-        },200);
+        bg_context.drawImage(img, 0, 0, 500, 700);
     });
     socket.on('tmpCircleForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
@@ -392,28 +391,64 @@ window.onload = function(){
         objectsFromOthers = obj;
         localStorage.setItem('objectsFromOthers', JSON.stringify(objectsFromOthers));
     });  
+
     formUpload.addEventListener('submit', function(e){
         e.preventDefault();
-        console.log(document.getElementById("input_file").files[0]);
+        let pr = new Promise(function(resolve, reject){
             let fileData = new FormData(formUpload);
-            let request = new XMLHttpRequest();
-            request.open("POST", '/upload', true);
-            request.onreadystatechange = function(){
-                console.log(request.readyState);
-                if(request.readyState == 4)
-                    setTimeout(function(){
-                        socket.emit('imageDrawForServer');
-                        socket.emit('readyToDrawIfImageUploaded');
-                    },200);        
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", '/upload', true);
+            xhr.onload = () => {
+                resolve(xhr.response);
             };
-            request.send(fileData);
+            xhr.send(fileData);
+            
+        });
+        pr.then(data => {
+            var img = new Image();
+            img.src = data;
+            bg_context.drawImage(img, 0, 0, 500, 700) ;
+            socket.emit('imageDrawForServer');
+            // setTimeout(() => {
+                
+            // }, 200);
+            
+            console.log(img);
+            console.log(data);
+        }).catch(function(err){
+            console.log(err);            
+        });        
+        // console.log(document.getElementById("input_file").files[0]);
+        // let pr = new Promise(function(resolve, reject){
+        //     let fileData = new FormData(formUpload);
+        //     let xhr = new XMLHttpRequest();
+        //     xhr.open("POST", '/upload', true);
+        //     xhr.onreadystatechange = function(){
+        //         console.log(xhr.readyState);
+        //         if(xhr.readyState == 4)
+        //             resolve(xhr.response);
+        //     };
+        //     xhr.send(fileData);
+        //     xhr.onload = () => console.log(xhr.response);
+        // });
+        // pr.then(data => {
+        //     var img = new Image();
+        //     img.src = data;
+        //     bg_context.drawImage(img, 0, 0, 500, 900);
+        //     console.log(img.src);
+        //     console.log(data);
+        // }).catch(function(err){
+        //     console.log(err);            
+        // });
+
+        
     });
     socket.on('imageDrawingIsAllowed', function(){
         var img = new Image();
         img.src = `/uploadedImages/${document.getElementById("input_file").files[0].name}`;
         console.log(img);
         setTimeout(function(){
-            bg_context.drawImage(img, 0, 0, 500, 900);
+            bg_context.drawImage(img, 0, 0, 500, 700);
         },200);
     });
 

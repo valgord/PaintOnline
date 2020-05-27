@@ -31,7 +31,7 @@ const storageConfig = multer.diskStorage({
 app.get('/paintonline', function(req, res){
     res.sendFile(__dirname + '/paint.html');
 });
- app.post('/upload', function(req, res){
+app.post('/upload', function(req, res){
 //         const directory = "img/uploadedImages";
 //             fs.readdir(directory, function(err, files){
 //                 console.log(directory);
@@ -41,23 +41,20 @@ app.get('/paintonline', function(req, res){
 //                         if (err) throw err;
 //                     });
 //                 }
-                pathForImage = '';
-                const directory = "img/uploadedImages";
-                var form = new formid.IncomingForm();
-                form.uploadDir = directory;
-                
-                form.on('fileBegin', function (name, file){
-                    file.path = form.uploadDir + "/" + file.name;
-                    
-                }); 
-                form.parse(req, function(err, fields, files){
-                    console.log(files.fileData.name);
-                    pathForImage = '/uploadedImages/' + files.fileData.name;
-                    console.log(pathForImage);
-                });
-                res.send();
-  
-
+                    pathForImage = '';
+                    const directory = "img/uploadedImages";
+                    var form = new formid.IncomingForm();
+                    form.uploadDir = directory;                    
+                    form
+                    .on('fileBegin', function (name, file){
+                        file.path = form.uploadDir + "/" + file.name;
+                        pathForImage = '/uploadedImages/' + file.name;
+                        console.log(pathForImage);
+                    })
+                    .on('end', function(){
+                        res.send(pathForImage);
+                    });
+                    form.parse(req);               
          });
             
 
@@ -128,6 +125,9 @@ io.on('connection', function(socket){
         localStorageToServer = data;
         console.log(localStorageToServer);
         socket.broadcast.emit('objectsFromOthersToClients', data);
+    });
+    socket.on('readyToDrawIfImageUploaded', function(){
+        socket.emit('imageDrawingIsAllowed');
     });
 
 
