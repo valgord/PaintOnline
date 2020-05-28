@@ -240,7 +240,8 @@
             return point;
         }
         function getTouchPosition(e){
-            var point = new Point(e.touches[0].pageX, e.touches[0].pageY);
+            let rect = e.target.getBoundingClientRect();
+            let point = new Point(e.targetTouches[0].pageX - rect.left, e.targetTouches[0].pageY - rect.top);
             return point; 
         }
         
