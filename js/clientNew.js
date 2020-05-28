@@ -22,7 +22,20 @@ window.onload = function(){
         function clearCanvas(canvas, context){
             context.clearRect(0, 0, canvas.width, canvas.height);    
         }
+        fg_canvas.addEventListener('touchstart', function(e){
 
+            
+            console.log(e);
+            console.log(e.touches[0].pageX);
+        });
+        fg_canvas.addEventListener('touchmove', function(e){
+            if (e.touches.length == 1){
+                e.preventDefault();
+                console.log('move');
+                document.getElementsByClassName('block-for-test')[0].innerHTML += 'move';
+            }
+
+        });
         
     let start = new Point(100, 100),
         finish = new Point(-1,-1),
@@ -408,13 +421,7 @@ window.onload = function(){
             var img = new Image();
             img.src = data;
             bg_context.drawImage(img, 0, 0, 500, 700) ;
-            socket.emit('imageDrawForServer');
-            // setTimeout(() => {
-                
-            // }, 200);
-            
-            console.log(img);
-            console.log(data);
+            socket.emit('imageDrawForServer');            
         }).catch(function(err){
             console.log(err);            
         });        
