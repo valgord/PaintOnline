@@ -24,7 +24,7 @@ window.onload = function(){
         }
 
         
-    let start = new Point(100, 100),
+    let start = new Point(-1, -1),
         finish = new Point(-1,-1),
         penId = "pen",
         lineId = "line",
@@ -301,9 +301,6 @@ let lastTouchMove = null;
 
     fg_canvas.addEventListener('touchstart', function(e){
         start = getTouchPosition(e);
-        
-        console.log(e);
-        console.log(e.touches[0].pageX);
     });
     fg_canvas.addEventListener('touchend', function(e){
         console.log(e);
@@ -320,8 +317,76 @@ let lastTouchMove = null;
                 socket.emit('myObjectsToServer', JSON.stringify(myObjects));
                 console.log(line.color);
                 break;
+            case penId:                    
+                myObjects.add(curve);
+                localStorage.clear();
+                localStorage.setItem('myObjects', JSON.stringify(myObjects));
+                socket.emit('myObjectsToServer', JSON.stringify(myObjects));
+                coords = [];
+                curve = new Curve();
+                break;    
+            case circleId:
+                let circleRadius = 0;
+                let circleCenter = new Point();
+                circleCenter.x = (finish.x + start.x)/2;
+                circleCenter.y = (finish.y + start.y)/2;
+                circleRadius = Math.sqrt(Math.pow(circleCenter.x - start.x,2) + Math.pow(circleCenter.y - start.y,2));
+                let circle = new Circle(circleCenter, circleRadius, range_stick.value, color.value);
+                socket.emit('commitCircleForServer', {
+                    center: circleCenter,
+                    r: circleRadius,
+                    thickness: range_stick.value,
+                    color: color.value
+                });
+                myObjects.add(circle);
+                localStorage.setItem('myObjects', JSON.stringify(myObjects));
+                socket.emit('myObjectsToServer', JSON.stringify(myObjects));
+                mouseDownFlag = false;
+                clearCanvas(fg_canvas, fg_context);
+                circle.draw(bg_context);
+                break;
+            case rectId:
+                width = finish.x - start.x;
+                height = finish.y - start.y;
+                let rect = new Rectangle(start, width, height, range_stick.value, color.value);
+                socket.emit('commitRectForServer', {
+                    start: start,
+                    width: width,
+                    height: height,
+                    thickness: range_stick.value,
+                    color: color.value
+                });
+                myObjects.add(rect);
+                localStorage.setItem('myObjects', JSON.stringify(myObjects));
+                socket.emit('myObjectsToServer', JSON.stringify(myObjects));                              
+                mouseDownFlag = false;
+                clearCanvas(fg_canvas, fg_context);
+                rect.draw(bg_context); 
+                break;    
+            case isosTriangleId:
+                let pointA = new Point(start.x, start.y);
+                let pointB = new Point((start.x + finish.x)/2, finish.y);
+                let pointC = new Point(finish.x, start.y); 
+                let isosTr = new IsoscelesTriangle(pointA, pointB, pointC, range_stick.value, color.value);
+                socket.emit('commitIsoscelesTriangleForServer', {
+                    pointA: pointA,
+                    pointB: pointB,
+                    pointC: pointC,
+                    thickness: range_stick.value,
+                    color: color.value
+                });
+                myObjects.add(isosTr);
+                localStorage.setItem('myObjects', JSON.stringify(myObjects));
+                socket.emit('myObjectsToServer', JSON.stringify(myObjects));                          
+                mouseDownFlag = false;
+                clearCanvas(fg_canvas, fg_context);
+                isosTr.draw(bg_context);  
+                console.log(myObjects);                 
+                break;      
         }
         lastTouchMove = null;
+        start = null;
+        
     });        
     fg_canvas.addEventListener('touchmove', function(e){
         if (e.touches.length == 1){
@@ -343,6 +408,66 @@ let lastTouchMove = null;
                     socket.emit('tmpLineDrawingToServer', tmpLine);                        
                     
                     break;
+                case penId:                    
+                    let linePartOfCurve = new Line(start, finish, range_stick.value, color.value);                    
+                        let p = getTouchPosition(e);
+                        linePartOfCurve.start = p;
+                        linePartOfCurve.finish = p;
+                        coords.push(p);
+                        if (coords.length > 1){
+                            linePartOfCurve.start = coords[coords.length-2];
+                            linePartOfCurve.finish = coords[coords.length-1];
+                            linePartOfCurve.draw(bg_context);
+                            socket.emit('linePartOfCurveToServer', linePartOfCurve);
+                            curve.add(linePartOfCurve); 
+                        }                                            
+                    break;    
+                case circleId:
+                    let circleRadius = 0;
+                    let circleCenter = new Point();
+                    clearCanvas(fg_canvas, fg_context);
+                    circleCenter.x = (getTouchPosition(e).x + start.x)/2;
+                    circleCenter.y = (getTouchPosition(e).y + start.y)/2;
+                    circleRadius = Math.sqrt(Math.pow(circleCenter.x - start.x,2) + Math.pow(circleCenter.y - start.y,2));
+                    socket.emit('tmpCircleForServer', {
+                        center: circleCenter,
+                        r: circleRadius,
+                        thickness: range_stick.value,
+                        color: color.value
+                    });
+                    let circleTmp = new Circle(circleCenter, circleRadius, range_stick.value, color.value);
+                    circleTmp.draw(fg_context);                                                 
+                    break;
+                case rectId:
+                    let width = 0;
+                    let height = 0;
+                    clearCanvas(fg_canvas, fg_context);
+                    width = getTouchPosition(e).x - start.x;
+                    height = getTouchPosition(e).y - start.y;
+                    socket.emit('tmpRectForServer', {
+                        start: start,
+                        width: width,
+                        height: height,
+                        thickness: range_stick.value
+                    });
+                    let rectTmp = new Rectangle(start, width, height, range_stick.value, color.value);
+                    rectTmp.draw(fg_context);                          
+                    break;    
+                case isosTriangleId:
+                        let curPoint = getTouchPosition(e);
+                        let pointA = new Point(start.x, start.y);
+                        let pointB = new Point((start.x + curPoint.x)/2, curPoint.y);
+                        let pointC = new Point(curPoint.x, start.y); 
+                        clearCanvas(fg_canvas, fg_context);
+                        socket.emit('tmpIsoscelesTriangleForServer', {
+                            pointA: pointA,
+                            pointB: pointB,
+                            pointC: pointC,
+                            thickness: range_stick.value
+                        });
+                        let isosTrTmp = new IsoscelesTriangle(pointA, pointB, pointC, range_stick.value, color.value);
+                        isosTrTmp.draw(fg_context);
+                    break;    
                 }
                        
                     
