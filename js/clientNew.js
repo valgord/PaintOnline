@@ -22,20 +22,7 @@ window.onload = function(){
         function clearCanvas(canvas, context){
             context.clearRect(0, 0, canvas.width, canvas.height);    
         }
-        fg_canvas.addEventListener('touchstart', function(e){
 
-            
-            console.log(e);
-            console.log(e.touches[0].pageX);
-        });
-        fg_canvas.addEventListener('touchmove', function(e){
-            if (e.touches.length == 1){
-                e.preventDefault();
-                console.log('move');
-                document.getElementsByClassName('block-for-test')[0].innerHTML += 'move';
-            }
-
-        });
         
     let start = new Point(100, 100),
         finish = new Point(-1,-1),
@@ -307,6 +294,63 @@ window.onload = function(){
                     break;  
             }               
     });
+
+
+
+let lastTouchMove = null;
+
+    fg_canvas.addEventListener('touchstart', function(e){
+        start = getTouchPosition(e);
+        
+        console.log(e);
+        console.log(e.touches[0].pageX);
+    });
+    fg_canvas.addEventListener('touchend', function(e){
+        console.log(e);
+        if (lastTouchMove!= null)
+            finish = lastTouchMove;
+        switch(chosenToolId){
+            case lineId:                
+                clearCanvas(fg_canvas, fg_context); 
+                let line = new Line(start, finish, range_stick.value, color.value);                        
+                line.draw(bg_context);
+                socket.emit('sendLineToServer', line);                                      
+                myObjects.add(line);
+                localStorage.setItem('myObjects', JSON.stringify(myObjects));
+                socket.emit('myObjectsToServer', JSON.stringify(myObjects));
+                console.log(line.color);
+                break;
+        }
+        lastTouchMove = null;
+    });        
+    fg_canvas.addEventListener('touchmove', function(e){
+        if (e.touches.length == 1){
+            e.preventDefault();
+            lastTouchMove = getTouchPosition(e);
+            bg_context.lineWidth = range_stick.value;
+            fg_context.lineWidth = range_stick.value;
+            switch(chosenToolId){
+                case lineId:
+                    let line = new Line(start, finish, range_stick.value, color.value);
+                    let tmpLine = new Line(start, finish, range_stick.value, color.value);                        
+                    line.start = start;
+                    tmpLine.start = start;
+                    tmpLine.finish = getTouchPosition(e);
+                    console.log(tmpLine.start);
+                    console.log(tmpLine.finish);
+                    clearCanvas(fg_canvas, fg_context);                             
+                    tmpLine.draw(fg_context);
+                    socket.emit('tmpLineDrawingToServer', tmpLine);                        
+                    
+                    break;
+                }
+                       
+                    
+
+        }
+
+    });
+
     socket.on('clearCanvasToClients', function(){
         clearCanvas(bg_canvas, bg_context);
         myObjects = new ObjectForDrawing();

@@ -239,6 +239,10 @@
             var point = new Point(e.offsetX==undefined?e.layerX:e.offsetX, e.offsetY==undefined?e.layerY:e.offsetY);
             return point;
         }
+        function getTouchPosition(e){
+            var point = new Point(e.touches[0].pageX, e.touches[0].pageY);
+            return point; 
+        }
         
         
       
