@@ -256,6 +256,7 @@
                     if (objMas[i].start && objMas[i].finish){ 
                         let line = new Line(objMas[i].start, objMas[i].finish, objMas[i].thickness, objMas[i].color);
                         objectsFromLocalstorage.add(line);
+                        continue;
                     }
                     //----------проверяем, является ли очередной объект кривой-------------
                     if (objMas[i].lines){
@@ -265,21 +266,25 @@
                             curve.add(line);
                         }
                         objectsFromLocalstorage.add(curve);
+                        continue;
                     }
                     //----------проверяем, является ли очередной объект окружностью-------------
                     if (objMas[i].center && objMas[i].r){
                         let circle = new Circle(objMas[i].center, objMas[i].r, objMas[i].thickness, objMas[i].color);
                         objectsFromLocalstorage.add(circle);
+                        continue;
                     }
                     //----------проверяем, является ли очередной объект прямоугольником-------------
                     if (objMas[i].start && objMas[i].width && objMas[i].height){
                         let new_rect = new Rectangle(objMas[i].start, objMas[i].width, objMas[i].height, objMas[i].thickness, objMas[i].color);
                         objectsFromLocalstorage.add(new_rect);
+                        continue;
                     }
                      //----------проверяем, является ли очередной объект равнобедренным треугольником-------------    
                     if (objMas[i].pointA && objMas[i].pointB && objMas[i].pointC){
                         let newTriangle = new IsoscelesTriangle(objMas[i].pointA, objMas[i].pointB, objMas[i].pointC, objMas[i].thickness,objMas[i].color);
                         objectsFromLocalstorage.add(newTriangle);
+                        continue;
                     }
 
 

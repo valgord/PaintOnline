@@ -529,9 +529,11 @@ let lastTouchMove = null;
     });
     socket.on('imageDrawForClients', function(path){
         var img = new Image();
+        img.onload = function(){
+            bg_context.drawImage(img, 0, 0, 500, 700);
+        };
         img.src = path;
-        console.log(img);
-        bg_context.drawImage(img, 0, 0, 500, 700);
+        
     });
     socket.on('tmpCircleForClients', function(data){
         clearCanvas(fg_canvas, fg_context);
@@ -589,14 +591,11 @@ let lastTouchMove = null;
         pr.then(data => {
             
             var img = new Image();
-            
+            img.src = data;
             img.onload = function(){
                 bg_context.drawImage(img, 0, 0, 500, 700) ;
                 socket.emit('imageDrawForServer');  
-            };
-            img.src = data;
-            
-                      
+            };                                           
         }).catch(function(err){
             console.log(err);            
         });        
