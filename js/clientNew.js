@@ -587,10 +587,16 @@ let lastTouchMove = null;
             
         });
         pr.then(data => {
+            
             var img = new Image();
+            
+            img.onload = function(){
+                bg_context.drawImage(img, 0, 0, 500, 700) ;
+                socket.emit('imageDrawForServer');  
+            };
             img.src = data;
-            bg_context.drawImage(img, 0, 0, 500, 700) ;
-            socket.emit('imageDrawForServer');            
+            
+                      
         }).catch(function(err){
             console.log(err);            
         });        
